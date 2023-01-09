@@ -16,6 +16,8 @@ server.on('request', (req, res)=>{
     // console.log(route, id, queries);
     
     if(req.method == 'GET'){
+
+        // categories AND categories/id
         if(route == 'categories' && !id){
             let cat=[];
             
@@ -49,10 +51,19 @@ server.on('request', (req, res)=>{
                 }
                
             })
+            if (cat.length == 0){
+                res.writeHead(400, {"content-type": "application.json"});
+                return res.end(JSON.stringify({
+                    status: "fail",
+                    msg: "ID not found"
+                }));
+            }
             res.writeHead(200, {"content-type": "application.json"});
             return res.end(JSON.stringify(cat));
         }
 
+
+        // subcategories AND subcategories/id
         if(route == 'subcategories' && !id){
             let subCat=[];
             
@@ -86,6 +97,13 @@ server.on('request', (req, res)=>{
                 }
                 
             })
+            if(subCat.length == 0){
+                res.writeHead(400, {"content-type": "application.json"})
+                return res.end(JSON.stringify({
+                    status: 'fail',
+                    msg: "ID not found"
+                }))
+            }
             res.writeHead(200, {"content-type": "application.json"});
             return res.end(JSON.stringify(subCat));
         }
