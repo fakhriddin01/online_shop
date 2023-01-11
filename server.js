@@ -7,18 +7,17 @@ let categories=JSON.parse(fs.readFileSync('./model/categories.json'));
 let subCategories=JSON.parse(fs.readFileSync('./model/subCategories.json'));
 let products = JSON.parse(fs.readFileSync('./model/products.json'));
 
-let {get_categories, get_categories_by_id, get_subCategories, get_subCategories_by_id, get_products_by_id} = require('./src/functions')
+let {get_categories, get_categories_by_id, get_subCategories, get_subCategories_by_id, get_products_by_id, get_subCategories_by_category_id, camelToUnderscore, filter_products} = require('./src/functions')
 let server = http.createServer();
-
-
 
 
 server.on('request', (req, res)=>{
     let req_url = req.url
     let queries = Object.entries(url.parse(req_url, true).query);
+    let queries_keys = Object.keys(url.parse(req_url, true).query);
     let route = url.parse(req_url, true).pathname.split('/')[1];
     let id = url.parse(req_url, true).pathname.split('/')[2];
-    // console.log(route, id, queries);
+    
     
     if(req.method == 'GET'){
 
@@ -47,9 +46,17 @@ server.on('request', (req, res)=>{
             get_products_by_id(req, res, id)
         }
 
-        // if(route == 'products' && queries.length!=0){
+        // products with queries
+        if(route == 'products' && queries.length!=0){
+            let result = filter_products(queries, queries_keys)
 
-        // }
+            res.writeHead(200, {"content-type": "application.json"})
+            res.end(JSON.stringify({
+                msg: "filtered_products by query",
+                items: result.length,
+                products: result
+            })) 
+        }
 
     }
     

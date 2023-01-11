@@ -62,5 +62,13 @@
     "product_name": "1202 ",
     "color": "red",
     "price": "20"
+  },
+  {
+    "product_id": 8,
+    "sub_category_id": 1,
+    "model": "nokia",
+    "product_name": "1203 ",
+    "color": "black",
+    "price": "22"
   }
 ]
