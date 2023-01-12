@@ -59,7 +59,7 @@ server.on('request', (req, res)=>{
         }
 
     }
-    
+
     if(req.method == 'POST'){
         if(req_url == '/categories'){
             req.on('data', (chunk)=>{
@@ -175,6 +175,121 @@ server.on('request', (req, res)=>{
             })
         }
 
+    }
+
+    if(req.method == "PUT"){
+        if(req_url==`/categories/${id}`){
+            req.on('data', chunk =>{
+                let data = JSON.parse(chunk);
+                let category = categories.find(c => c.category_id == id);
+                if(!category){
+                    res.writeHead(400, {"content-type": "application.json"})
+                    return res.end(JSON.stringify({
+                        msg: `category with id:${id}, not found!`
+                    }))
+                }
+                let entries = Object.entries(data)
+                entries.forEach(el => el[0]=camelToUnderscore(el[0]))
+                data = Object.fromEntries(entries);
+                categories.forEach(c => {
+                    if(c.category_id == category.category_id){
+                        data.category_name && (c.category_name = data.category_name);
+                    }
+                })
+                fs.writeFile('./model/categories.json', JSON.stringify(categories), (err)=>{
+                    if(err) throw err
+                })
+                res.writeHead(200, {"content-type": "application.json"})
+                res.end(JSON.stringify({
+                    msg: "category updated!"
+                }))
+
+            })
+        }
+
+        if(req_url == `/subcategories/${id}`){
+            req.on('data', chunk =>{
+                let exist=false;
+                let data = JSON.parse(chunk);
+                let entries = Object.entries(data)
+                entries.forEach(el => el[0]=camelToUnderscore(el[0]))
+                data = Object.fromEntries(entries);
+                let exist_category=categories.find(c => c.category_id == data.category_id);
+                if(!exist_category){
+                    res.writeHead(400, {"content-type": "application.json"})
+                    return res.end(JSON.stringify({
+                        msg: `category with id:${data.category_id}, not found!`
+                    }))
+                }
+                subCategories.forEach(s => {
+                    
+                    if(s.sub_category_id == id){
+                        data.category_id && (s.category_id = data.category_id);
+                        data.sub_category_name && (s.sub_category_name = data.sub_category_name);
+                        exist = true;
+                    }
+                })
+                if(!exist){
+                    res.writeHead(400, {"content-type": "application.json"})
+                    return res.end(JSON.stringify({
+                        msg: `subcategory with id:${id}, not found!`
+                    }))
+                }
+                fs.writeFile('./model/subCategories.json', JSON.stringify(subCategories), (err)=>{
+                    if(err) throw err
+                })
+                res.writeHead(200, {"content-type": "application.json"})
+                res.end(JSON.stringify({
+                    msg: "subcategory updated!"
+                }))
+
+            })
+        }
+
+        if(req_url==`/products/${id}`){
+            req.on('data', (chunk)=>{
+                let exist=false;
+                let data = JSON.parse(chunk);
+                let entries = Object.entries(data)
+                entries.forEach(el => el[0]=camelToUnderscore(el[0]))
+                data = Object.fromEntries(entries);
+                
+                if(data.sub_category_name){
+                    let exist_subCategory = subCategories.find(s => s.sub_category_name == data.sub_category_name);
+                    if(!exist_subCategory){
+                        res.writeHead(400, {"content-type": "application.json"})
+                        return res.end(JSON.stringify({
+                            msg: `subcategory with name:${data.sub_category_name}, not found!`
+                        }))
+                    }
+                }
+                    
+                products.forEach(p => {
+                    if(p.product_id == id){
+                        data.sub_category_id && (p.sub_category_id = data.sub_category_id);
+                        data.product_name && (p.product_name = data.product_name);
+                        data.price && (p.price = data.price);
+                        data.color && (p.color = data.color);
+                        data.model && (p.model= data.model);
+                        exist = true;
+                    }
+                })
+                if(!exist){
+                    res.writeHead(400, {"content-type": "application.json"})
+                    return res.end(JSON.stringify({
+                        msg: `product with id:${id}, not found!`
+                    })) 
+                }
+
+                fs.writeFile('./model/products.json', JSON.stringify(products), (err)=>{
+                    if(err) throw err;
+                })
+                res.writeHead(200, {"content-type": "application.json"})
+                    res.end(JSON.stringify({
+                    msg: `product updated!!!`
+                })) 
+            })
+        }
     }
     
 })
