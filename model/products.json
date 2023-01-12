@@ -70,5 +70,13 @@
     "product_name": "1203 ",
     "color": "black",
     "price": "22"
+  },
+  {
+    "product_id": 9,
+    "sub_category_name": "sedan",
+    "product_name": "Nexia",
+    "model": "Nexia R3",
+    "color": "white",
+    "price": "10000"
   }
 ]

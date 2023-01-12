@@ -60,6 +60,123 @@ server.on('request', (req, res)=>{
 
     }
     
+    if(req.method == 'POST'){
+        if(req_url == '/categories'){
+            req.on('data', (chunk)=>{
+                let exist;
+                let data= JSON.parse(chunk)
+                let entries = Object.entries(data)
+                if(entries[0][0]!='categoryName'){
+                    res.writeHead(400, {"content-type": "application.json"})
+                    return res.end(JSON.stringify({
+                        msg: "Please input correct propertry as 'categoryName' !"
+                    }))
+                }
+                entries.forEach(el => el[0]=camelToUnderscore(el[0]))
+                data = Object.fromEntries(entries);
+                exist = categories.find(c => c.category_name.toLowerCase() == data.category_name.toLowerCase())
+                if(exist){
+                    res.writeHead(400, {"content-type": "application.json"})
+                    return res.end(JSON.stringify({
+                        msg: "this category_name already exist!"
+                    }))
+                }
+                categories.push({category_id: categories.at(-1).category_id +1, ...data})
+                fs.writeFile('./model/categories.json', JSON.stringify(categories), (err)=>{
+                    if(err) throw err
+                });
+
+                res.writeHead(200, {"content-type": "application.json"})
+                res.end(JSON.stringify({
+                    msg: "Category added!"
+                }))
+            })
+        }
+
+        if(req_url == '/subCategories'){
+            req.on('data', (chunk)=>{
+                let exist;
+                let data= JSON.parse(chunk)
+                let entries = Object.entries(data)
+                
+                if(entries[0][0]!='categoryId' && entries[1][0]!='subCategoryName'){
+                    res.writeHead(400, {"content-type": "application.json"})
+                    return res.end(JSON.stringify({
+                        msg: "Please input correct propertry as 'categoryName' !"
+                    }))
+                }
+                entries.forEach(el => el[0]=camelToUnderscore(el[0]))
+                data = Object.fromEntries(entries);
+
+                if(!categories.find(c => c.category_id==data.category_id)){
+                    res.writeHead(400, {"content-type": "application.json"})
+                    return res.end(JSON.stringify({
+                        msg: `Category:${data.category_id} doesn't exist!`
+                    }))
+                }
+
+                exist = subCategories.find(s => {
+                    if(s.sub_category_name.toLowerCase() == data.sub_category_name.toLowerCase() && s.category_id == data.category_id)
+                    return s
+                } )
+                if(exist){
+                    res.writeHead(400, {"content-type": "application.json"})
+                    return res.end(JSON.stringify({
+                        msg: `this sub_category_name in category:${data.category_id} already exist!`
+                    }))
+                }
+                subCategories.push({sub_category_id: subCategories.at(-1).sub_category_id +1, ...data})
+                fs.writeFile('./model/subCategories.json', JSON.stringify(subCategories), (err)=>{
+                    if(err) throw err
+                });
+
+                res.writeHead(200, {"content-type": "application.json"})
+                res.end(JSON.stringify({
+                    msg: "subCategory added!"
+                }))
+            })
+        }
+
+        if(req_url == '/products'){
+            req.on('data', (chunk)=>{
+                let exist;
+                let data= JSON.parse(chunk)
+                let entries = Object.entries(data)
+                
+                if(entries[0][0]!='subCategoryName' || entries[1][0]!='productName' || entries[2][0]!='model' || entries[3][0]!='color' || entries[4][0]!='price'){
+                    res.writeHead(400, {"content-type": "application.json"})
+                    return res.end(JSON.stringify({
+                        msg: "Please input correct propertry as below!",
+                        form: {
+                            subCategoryName: "",
+                            productName: "",
+                            model: "",
+                            color:"",
+                            price: ""
+                        }
+                    }))
+                }
+                entries.forEach(el => el[0]=camelToUnderscore(el[0]))
+                data = Object.fromEntries(entries);
+                if(!subCategories.find(s => s.sub_category_name == data.sub_category_name)){
+                    res.writeHead(400, {"content-type": "application.json"})
+                    return res.end(JSON.stringify({
+                        msg: `sub_category with name:${data.sub_category_name}, doesn't exist!`
+                    }))
+                }
+                products.push({product_id: products.at(-1).product_id +1, ...data});
+                fs.writeFile('./model/products.json', JSON.stringify(products), (err)=>{
+                    if(err) throw err
+                })
+                res.writeHead(200, {"content-type": "application.json"})
+                res.end(JSON.stringify({
+                    msg: "product added!"
+                }))
+            })
+        }
+
+    }
+    
 })
 
 
